@@ -1,0 +1,38 @@
+# Bash Aliases & Functions
+# Managed with ❤️ by Bibek Aryal
+# https://bibeka.com.np/
+
+# == System shortcuts ==
+
+alias pls='sudo'
+
+apt-update () {
+    sudo apt-get update && \
+    sudo apt-get dist-upgrade -Vy && \
+    sudo apt-get autoremove -y && \
+    sudo apt-get autoclean && \
+    sudo apt-get clean
+}
+
+mkcd () {
+    mkdir -p "$1" && cd "$1"
+}
+
+# == Docker helpers ==
+
+mkcompose () {
+    mkdir -p "$1" && cd "$1" && nano compose.yml
+}
+
+alias dc='sudo docker compose'
+alias dcup='dc up -d'
+alias dcdown='dc down'
+alias dls='sudo docker ps -a'
+alias dclogs='dc logs -f'
+alias dcfr='dc up -d --force-recreate'
+alias dcupdate='dc pull && dc up -d'
+
+## == Local overrides ==
+
+# Create ~/.bash_aliases.local for host-specific aliases
+[ -f ~/.bash_aliases.local ] && source ~/.bash_aliases.local

@@ -20,7 +20,13 @@ Designed for:
 ## 🚀 Quick Install (Recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/arlbibek/dotfiles/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/arlbibek/dotfiles/refs/heads/master/scripts/install.sh | bash
+```
+
+or,
+
+```bash
+curl -fsSL https://bibeka.com.np/install | bash
 ```
 
 Then open a new terminal or run:
@@ -34,7 +40,7 @@ source ~/.bash_aliases
 To update on any machine:
 
 ```bash
-cd ~/dotfiles && git pull
+cd ~/.dotfiles && git pull
 ```
 
 ## 🧩 Local Overrides (Recommended)

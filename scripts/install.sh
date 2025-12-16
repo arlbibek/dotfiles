@@ -2,7 +2,7 @@
 set -e
 
 REPO_URL="https://github.com/arlbibek/dotfiles.git"
-DOTFILES_DIR="$HOME/dotfiles"
+DOTFILES_DIR="$HOME/.dotfiles"
 
 echo "[+] Installing dotfiles from $REPO_URL"
 

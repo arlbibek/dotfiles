@@ -12,6 +12,7 @@ apt-update () {
     sudo apt-get autoremove -y && \
     sudo apt-get autoclean && \
     sudo apt-get clean
+    cd ~/.dotfiles && git pull
 }
 
 mkcd () {

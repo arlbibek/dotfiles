@@ -4,8 +4,6 @@
 
 # == System shortcuts ==
 
-alias pls='sudo'
-
 apt-update () {
     sudo apt-get update && \
     sudo apt-get dist-upgrade -Vy && \
@@ -14,6 +12,8 @@ apt-update () {
     sudo apt-get clean
     cd ~/.dotfiles && git pull
 }
+
+alias dotfiles-update='curl -fsSL https://bibeka.com.np/install | bash'
 
 mkcd () {
     mkdir -p "$1" && cd "$1"

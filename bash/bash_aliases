@@ -31,7 +31,7 @@ alias dcdown='dc down'
 alias dls='sudo docker ps -a'
 alias dclogs='dc logs -f'
 alias dcfr='dc up -d --force-recreate'
-alias dcupdate='dc pull && dc up -d'
+alias dcupdate='dc pull && dc up -d --force-recreate'
 
 ## == Local overrides ==
 

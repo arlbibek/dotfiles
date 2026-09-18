@@ -2,6 +2,9 @@
 # Managed with ❤️ by Bibek Aryal
 # https://bibeka.com.np/
 
+# Clear any stale aliases from prior sessions before defining functions below
+unalias apt-update dotfiles-update mkcd mkcompose dc dcup dcdown dls dclogs dcfr dcupdate dcls dcps 2>/dev/null
+
 # == System shortcuts ==
 
 apt-update () {

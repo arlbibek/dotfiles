@@ -5,6 +5,7 @@
 # == System shortcuts ==
 
 apt-update () {
+    echo "alias: sudo apt-get update && sudo apt-get dist-upgrade -Vy && sudo apt-get autoremove -y && sudo apt-get autoclean && sudo apt-get clean && cd ~/.dotfiles && git pull"
     sudo apt-get update && \
     sudo apt-get dist-upgrade -Vy && \
     sudo apt-get autoremove -y && \
@@ -13,25 +14,67 @@ apt-update () {
     cd ~/.dotfiles && git pull
 }
 
-alias dotfiles-update='curl -fsSL https://bibeka.com.np/install | bash'
+dotfiles-update () {
+    echo "alias: curl -fsSL https://bibeka.com.np/install | bash"
+    curl -fsSL https://bibeka.com.np/install | bash
+}
 
 mkcd () {
+    echo "alias: mkdir -p $1 && cd $1"
     mkdir -p "$1" && cd "$1"
 }
 
 # == Docker helpers ==
 
 mkcompose () {
+    echo "alias: mkdir -p $1 && cd $1 && nano compose.yml"
     mkdir -p "$1" && cd "$1" && nano compose.yml
 }
 
-alias dc='sudo docker compose'
-alias dcup='dc up -d'
-alias dcdown='dc down'
-alias dls='sudo docker ps -a'
-alias dclogs='dc logs -f'
-alias dcfr='dc up -d --force-recreate'
-alias dcupdate='dc pull && dc up -d --force-recreate'
+dc () {
+    echo "alias: sudo docker compose $*"
+    sudo docker compose "$@"
+}
+
+dcup () {
+    echo "alias: sudo docker compose up -d"
+    sudo docker compose up -d
+}
+
+dcdown () {
+    echo "alias: sudo docker compose down"
+    sudo docker compose down
+}
+
+dls () {
+    echo "alias: sudo docker ps -a"
+    sudo docker ps -a
+}
+
+dclogs () {
+    echo "alias: sudo docker compose logs -f"
+    sudo docker compose logs -f
+}
+
+dcfr () {
+    echo "alias: sudo docker compose up -d --force-recreate"
+    sudo docker compose up -d --force-recreate
+}
+
+dcupdate () {
+    echo "alias: sudo docker compose pull && sudo docker compose up -d --force-recreate"
+    sudo docker compose pull && sudo docker compose up -d --force-recreate
+}
+
+dcls () {
+    echo "alias: sudo docker compose ls"
+    sudo docker compose ls
+}
+
+dcps () {
+    echo "alias: sudo docker compose ps"
+    sudo docker compose ps
+}
 
 ## == Local overrides ==
 

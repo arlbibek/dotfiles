@@ -59,7 +59,7 @@ cd ~/.dotfiles && git pull
 nano ~/.bash_aliases.local
 ```
 
-This file is sourced automatically if present.
+This file is sourced automatically if present. Put custom aliases here rather than editing `~/.dotfiles` directly: local edits there are auto-stashed on update (restore with `git -C ~/.dotfiles stash pop`).
 
 ## 📦 Included Aliases
 
@@ -67,6 +67,7 @@ This file is sourced automatically if present.
 | ------------------- | --------------------------------------------------------------- |
 | `update-all`        | Full system update & cleanup (apt or dnf), then pull dotfiles   |
 | `update-dotfiles`   | Re-run the dotfiles installer                                   |
+| `dotfiles-pull`     | Pull `~/.dotfiles`, auto-stashing local edits first             |
 | `install-basics`    | Install basic packages (apt or dnf)                             |
 | `copy <file>...`    | Copy files to the clipboard and print lines/bytes copied        |
 | `<cmd> \| copy`     | Copy command output to the clipboard                            |

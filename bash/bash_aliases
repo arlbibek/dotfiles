@@ -3,28 +3,40 @@
 # https://bibeka.com.np/
 
 # Clear any stale aliases from prior sessions before defining functions below
-unalias apt-update update-all dotfiles-update update-dotfiles install-basics copy mkcd mkcompose dc dcup dcdown dls dclogs dcfr dcupdate dcls dcps 2>/dev/null
+unalias apt-update update-all dotfiles-pull dotfiles-update update-dotfiles install-basics copy mkcd mkcompose dc dcup dcdown dls dclogs dcfr dcupdate dcls dcps 2>/dev/null
 
 # == System shortcuts ==
+
+# Pull ~/.dotfiles, auto-stashing any local edits so the pull never fails
+dotfiles-pull () {
+    local dir=~/.dotfiles
+    if [ -n "$(git -C "$dir" status --porcelain 2>/dev/null)" ]; then
+        echo "[!] Local changes in $dir - stashing them before pull"
+        git -C "$dir" -c user.name=dotfiles -c user.email=dotfiles@localhost \
+            stash push -u -m "dotfiles auto-stash $(date '+%F %T')" >/dev/null
+        echo "[i] Restore with: git -C $dir stash pop   (use ~/.bash_aliases.local for custom aliases)"
+    fi
+    git -C "$dir" pull
+}
 
 update-all () {
     local sudo=""; [ "$(id -u)" -eq 0 ] || sudo="sudo"
     if command -v apt-get >/dev/null 2>&1; then
-        echo "alias: sudo apt-get update && sudo apt-get dist-upgrade -Vy && sudo apt-get autoremove -y && sudo apt-get autoclean && sudo apt-get clean && git -C ~/.dotfiles pull"
+        echo "alias: sudo apt-get update && sudo apt-get dist-upgrade -Vy && sudo apt-get autoremove -y && sudo apt-get autoclean && sudo apt-get clean && dotfiles-pull"
         $sudo apt-get update && \
         $sudo apt-get dist-upgrade -Vy && \
         $sudo apt-get autoremove -y && \
         $sudo apt-get autoclean && \
         $sudo apt-get clean
     elif command -v dnf >/dev/null 2>&1; then
-        echo "alias: sudo dnf upgrade --refresh -y && sudo dnf autoremove -y && sudo dnf clean packages && git -C ~/.dotfiles pull"
+        echo "alias: sudo dnf upgrade --refresh -y && sudo dnf autoremove -y && sudo dnf clean packages && dotfiles-pull"
         $sudo dnf upgrade --refresh -y && \
         $sudo dnf autoremove -y && \
         $sudo dnf clean packages
     else
         echo "[!] Unsupported system: neither apt-get nor dnf found" >&2
     fi
-    git -C ~/.dotfiles pull
+    dotfiles-pull
 }
 
 update-dotfiles () {

@@ -43,6 +43,12 @@ if [ ! -d "$DOTFILES_DIR/.git" ]; then
     git clone "$REPO_URL" "$DOTFILES_DIR"
 else
     echo "[+] Updating existing dotfiles repository..."
+    if [ -n "$(git -C "$DOTFILES_DIR" status --porcelain)" ]; then
+        echo "[!] Local changes in $DOTFILES_DIR - stashing them before pull"
+        git -C "$DOTFILES_DIR" -c user.name=dotfiles -c user.email=dotfiles@localhost \
+            stash push -u -m "dotfiles auto-stash $(date '+%F %T')" >/dev/null
+        echo "[i] Restore with: git -C $DOTFILES_DIR stash pop   (use ~/.bash_aliases.local for custom aliases)"
+    fi
     git -C "$DOTFILES_DIR" pull
 fi
 

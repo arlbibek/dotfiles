@@ -1,15 +1,40 @@
 #!/usr/bin/env bash
+# Usage:
+#   curl -fsSL https://bibeka.com.np/install | bash                     # prompts for basic packages (if a terminal is available)
+#   curl -fsSL https://bibeka.com.np/install | bash -s -- --packages    # also install basic packages
+#   curl -fsSL https://bibeka.com.np/install | bash -s -- --no-packages # skip basic packages
 set -e
 
 REPO_URL="https://github.com/arlbibek/dotfiles.git"
 DOTFILES_DIR="$HOME/.dotfiles"
+
+INSTALL_PACKAGES=""
+for arg in "$@"; do
+    case "$arg" in
+        -p|--packages)    INSTALL_PACKAGES="yes" ;;
+        --no-packages)    INSTALL_PACKAGES="no" ;;
+        -h|--help)
+            echo "Usage: install.sh [--packages | --no-packages]"
+            exit 0 ;;
+        *) echo "[!] Unknown option: $arg" >&2; exit 1 ;;
+    esac
+done
+
+if [ "$(id -u)" -eq 0 ]; then SUDO=""; else SUDO="sudo"; fi
 
 echo "[+] Installing dotfiles from $REPO_URL"
 
 # Ensure git exists
 if ! command -v git >/dev/null 2>&1; then
     echo "[!] git not found. Installing git..."
-    sudo apt update && sudo apt install -y git
+    if command -v apt-get >/dev/null 2>&1; then
+        $SUDO apt-get update && $SUDO apt-get install -y git
+    elif command -v dnf >/dev/null 2>&1; then
+        $SUDO dnf install -y git
+    else
+        echo "[!] Please install git manually and re-run." >&2
+        exit 1
+    fi
 fi
 
 # Clone or update repo
@@ -18,8 +43,7 @@ if [ ! -d "$DOTFILES_DIR/.git" ]; then
     git clone "$REPO_URL" "$DOTFILES_DIR"
 else
     echo "[+] Updating existing dotfiles repository..."
-    cd "$DOTFILES_DIR"
-    git pull
+    git -C "$DOTFILES_DIR" pull
 fi
 
 # Symlink bash aliases
@@ -27,7 +51,7 @@ echo "[+] Linking bash aliases..."
 ln -sf "$DOTFILES_DIR/bash/bash_aliases" "$HOME/.bash_aliases"
 
 # Ensure bashrc loads bash_aliases
-if ! grep -q "bash_aliases" "$HOME/.bashrc"; then
+if ! grep -q "bash_aliases" "$HOME/.bashrc" 2>/dev/null; then
     echo "[+] Enabling ~/.bash_aliases in ~/.bashrc"
     cat <<'EOF' >> "$HOME/.bashrc"
 
@@ -36,8 +60,17 @@ if ! grep -q "bash_aliases" "$HOME/.bashrc"; then
 EOF
 fi
 
-# Apply aliases (best effort)
-source "$HOME/.bash_aliases" 2>/dev/null || true
+# Optional: basic packages (ask via /dev/tty so it works with curl | bash)
+if [ -z "$INSTALL_PACKAGES" ] && [ -r /dev/tty ] && { true </dev/tty; } 2>/dev/null; then
+    read -r -p "[?] Install basic packages (python3, pip, tree, sl, htop, jq, ...)? [y/N] " reply </dev/tty || reply=""
+    case "$reply" in [yY]*) INSTALL_PACKAGES="yes" ;; esac
+fi
+
+if [ "$INSTALL_PACKAGES" = "yes" ]; then
+    bash "$DOTFILES_DIR/scripts/install-packages.sh" || echo "[!] Some packages failed to install (see above)"
+else
+    echo "[i] Skipped basic packages. Install later with: install-basics"
+fi
 
 echo "[ok] Dotfiles installed successfully"
 echo "[i] Open a new terminal or run: source ~/.bash_aliases"

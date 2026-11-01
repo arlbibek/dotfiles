@@ -3,21 +3,31 @@
 # https://bibeka.com.np/
 
 # Clear any stale aliases from prior sessions before defining functions below
-unalias apt-update dotfiles-update mkcd mkcompose dc dcup dcdown dls dclogs dcfr dcupdate dcls dcps 2>/dev/null
+unalias apt-update update-all dotfiles-update update-dotfiles install-basics copy mkcd mkcompose dc dcup dcdown dls dclogs dcfr dcupdate dcls dcps 2>/dev/null
 
 # == System shortcuts ==
 
-apt-update () {
-    echo "alias: sudo apt-get update && sudo apt-get dist-upgrade -Vy && sudo apt-get autoremove -y && sudo apt-get autoclean && sudo apt-get clean && cd ~/.dotfiles && git pull"
-    sudo apt-get update && \
-    sudo apt-get dist-upgrade -Vy && \
-    sudo apt-get autoremove -y && \
-    sudo apt-get autoclean && \
-    sudo apt-get clean
-    cd ~/.dotfiles && git pull
+update-all () {
+    local sudo=""; [ "$(id -u)" -eq 0 ] || sudo="sudo"
+    if command -v apt-get >/dev/null 2>&1; then
+        echo "alias: sudo apt-get update && sudo apt-get dist-upgrade -Vy && sudo apt-get autoremove -y && sudo apt-get autoclean && sudo apt-get clean && git -C ~/.dotfiles pull"
+        $sudo apt-get update && \
+        $sudo apt-get dist-upgrade -Vy && \
+        $sudo apt-get autoremove -y && \
+        $sudo apt-get autoclean && \
+        $sudo apt-get clean
+    elif command -v dnf >/dev/null 2>&1; then
+        echo "alias: sudo dnf upgrade --refresh -y && sudo dnf autoremove -y && sudo dnf clean packages && git -C ~/.dotfiles pull"
+        $sudo dnf upgrade --refresh -y && \
+        $sudo dnf autoremove -y && \
+        $sudo dnf clean packages
+    else
+        echo "[!] Unsupported system: neither apt-get nor dnf found" >&2
+    fi
+    git -C ~/.dotfiles pull
 }
 
-dotfiles-update () {
+update-dotfiles () {
     echo "alias: curl -fsSL https://bibeka.com.np/install | bash"
     curl -fsSL https://bibeka.com.np/install | bash
 }
@@ -25,6 +35,51 @@ dotfiles-update () {
 mkcd () {
     echo "alias: mkdir -p $1 && cd $1"
     mkdir -p "$1" && cd "$1"
+}
+
+install-basics () {
+    echo "alias: bash ~/.dotfiles/scripts/install-packages.sh"
+    bash ~/.dotfiles/scripts/install-packages.sh
+}
+
+# Copy files or piped output to the clipboard and report what was copied.
+#   copy README.md        |   git diff | copy
+# Uses wl-copy (Wayland), xclip/xsel (X11), or OSC 52 (SSH / no display).
+copy () {
+    local tmp lines bytes tool
+    tmp=$(mktemp) || return 1
+    if [ $# -gt 0 ]; then
+        cat -- "$@" > "$tmp" || { rm -f "$tmp"; return 1; }
+    elif [ -t 0 ]; then
+        echo "usage: copy <file>...   or   <command> | copy" >&2
+        rm -f "$tmp"; return 1
+    else
+        cat > "$tmp"
+    fi
+
+    lines=$(wc -l < "$tmp")
+    bytes=$(wc -c < "$tmp")
+    # count a final line that has no trailing newline
+    if [ "$bytes" -gt 0 ] && [ -n "$(tail -c1 "$tmp")" ]; then lines=$((lines + 1)); fi
+
+    if [ -n "${WAYLAND_DISPLAY:-}" ] && command -v wl-copy >/dev/null 2>&1; then
+        tool="wl-copy"; wl-copy < "$tmp"
+    elif [ -n "${DISPLAY:-}" ] && command -v xclip >/dev/null 2>&1; then
+        tool="xclip -selection clipboard"; xclip -selection clipboard < "$tmp"
+    elif [ -n "${DISPLAY:-}" ] && command -v xsel >/dev/null 2>&1; then
+        tool="xsel --clipboard --input"; xsel --clipboard --input < "$tmp"
+    elif [ -w /dev/tty ]; then
+        tool="OSC 52"; printf '\033]52;c;%s\a' "$(base64 < "$tmp" | tr -d '\n')" > /dev/tty
+    else
+        echo "[!] No clipboard tool available (install wl-clipboard or xclip)" >&2
+        rm -f "$tmp"; return 1
+    fi
+    local rc=$?
+    rm -f "$tmp"
+    [ $rc -eq 0 ] || { echo "[!] $tool failed" >&2; return $rc; }
+
+    echo "alias: ${*:-<stdin>} | $tool"
+    echo "[ok] Copied $lines line(s), $bytes bytes to clipboard"
 }
 
 # == Docker helpers ==
